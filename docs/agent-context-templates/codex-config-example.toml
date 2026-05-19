@@ -1,0 +1,15 @@
+# Example Codex config for SASE-310-FULL.
+# Copy manually to ~/.codex/config.toml if desired.
+# Do NOT commit your real ~/.codex/config.toml.
+
+model = "gpt-5.5"
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+web_search = "disabled"
+model_reasoning_effort = "high"
+personality = "pragmatic"
+
+[features]
+shell_snapshot = true
+multi_agent = true
+hooks = true

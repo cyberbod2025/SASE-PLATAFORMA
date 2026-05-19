@@ -1,0 +1,12 @@
+node_modules
+dist
+.env
+.env.*
+!.env.example
+*.local
+*.tsbuildinfo
+coverage
+.DS_Store
+
+# Local agent context
+.agent-context/
