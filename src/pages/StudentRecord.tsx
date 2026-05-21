@@ -15,6 +15,8 @@ const tiposIncidencia = ['Retardo', 'Falta de material', 'Conducta', 'Uniforme',
 export function StudentRecord() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [refreshKey, setRefreshKey] = useState(0);
+
   const alumno = id ? getAlumnoById(id) : undefined;
   const incidencias = id ? getIncidencias(id) : [];
   const auditoria = id ? getAuditoria(id) : [];
@@ -43,15 +45,24 @@ export function StudentRecord() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!descripcion.trim()) return;
-    if (!alumno) return;
-    registrarIncidencia({
+    console.log('handleSubmit called', { descripcion, alumno, tipo, prioridad, refreshKey });
+    if (!descripcion.trim()) {
+      console.log('descripcion is empty');
+      return;
+    }
+    if (!alumno) {
+      console.log('alumno is undefined');
+      return;
+    }
+    const result = registrarIncidencia({
       alumnoId: alumno.id,
       tipo,
       prioridad,
       descripcion: descripcion.trim(),
       observaciones: observaciones.trim(),
     });
+    console.log('registrarIncidencia result', result);
+    setRefreshKey((k) => k + 1);
     setSaved(true);
     setShowForm(false);
     setDescripcion('');
@@ -61,7 +72,7 @@ export function StudentRecord() {
   }
 
   return (
-    <div className="space-y-8">
+    <div key={refreshKey} className="space-y-8">
       <nav className="flex items-center gap-2 text-sm text-slate-500">
         <button type="button" onClick={() => navigate('/alumnos')} className="hover:text-slate-800 transition">Alumnos</button>
         <span>/</span>
