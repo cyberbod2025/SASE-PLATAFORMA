@@ -22,6 +22,8 @@ type SidebarProps = {
 };
 
 const routeIcons: Record<string, LucideIcon> = {
+  '/dashboard': LayoutDashboard,
+  '/alumnos': UsersRound,
   '/direccion': LayoutDashboard,
   '/secretaria': UsersRound,
   '/prefectura': ShieldAlert,
@@ -36,7 +38,7 @@ const routeIcons: Record<string, LucideIcon> = {
   '/admin': Settings
 };
 
-const sections: RouteSection[] = ['Operación diaria', 'Atención institucional', 'Sistema'];
+const sections: RouteSection[] = ['MVP Vertical', 'Operación diaria', 'Atención institucional', 'Sistema'];
 
 export function Sidebar({ routes }: SidebarProps) {
   return (
