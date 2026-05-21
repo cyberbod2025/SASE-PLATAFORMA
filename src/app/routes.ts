@@ -1,7 +1,7 @@
 import { type InstitutionalRole, institutionalRoles } from './roles';
 
 export type RouteStatus = 'En preparación';
-export type RouteSection = 'Operación diaria' | 'Atención institucional' | 'Sistema';
+export type RouteSection = 'MVP Vertical' | 'Operación diaria' | 'Atención institucional' | 'Sistema';
 export type RouteTone = 'blue' | 'cyan' | 'green' | 'amber' | 'violet' | 'red';
 
 export type AppRoute = {
@@ -21,6 +21,32 @@ export type AppRoute = {
 const allAdministrativeRoles = institutionalRoles.filter((role) => role !== 'docente');
 
 export const appRoutes: AppRoute[] = [
+  {
+    path: '/dashboard',
+    label: 'Panel',
+    module: 'Panel de control',
+    description: 'Resumen institucional con KPIs, actividad reciente y acceso rápido a alumnos.',
+    status: 'En preparación',
+    section: 'MVP Vertical',
+    tone: 'blue',
+    allowedRoles: [...institutionalRoles],
+    defaultFor: [...institutionalRoles],
+    checkpoints: ['KPIs', 'Actividad reciente', 'Acceso a alumnos'],
+    nextCapabilities: ['Alertas en tiempo real', 'Gráficas', 'Filtros por periodo']
+  },
+  {
+    path: '/alumnos',
+    label: 'Alumnos',
+    module: 'Listado de alumnos',
+    description: 'Listado institucional de alumnos con acceso a expediente individual.',
+    status: 'En preparación',
+    section: 'MVP Vertical',
+    tone: 'cyan',
+    allowedRoles: [...institutionalRoles],
+    defaultFor: [],
+    checkpoints: ['Listado', 'Filtros', 'Acceso a expediente'],
+    nextCapabilities: ['Búsqueda avanzada', 'Filtros por grupo', 'Exportar listado']
+  },
   {
     path: '/direccion',
     label: 'Dirección',
