@@ -1,11 +1,26 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { getActividadReciente, getStats } from '../store/mockData';
+import { auditRepository } from '../repositories/auditRepository';
+import { incidentsRepository } from '../repositories/incidentsRepository';
+import { studentsRepository } from '../repositories/studentsRepository';
 
 export function DashboardMvp() {
   const navigate = useNavigate();
-  const stats = getStats();
-  const actividad = getActividadReciente(6);
+  const [totalAlumnos, setTotalAlumnos] = useState<number | string>('...');
+  
+  useEffect(() => {
+    studentsRepository.getAll()
+      .then(data => setTotalAlumnos(data.length))
+      .catch(() => setTotalAlumnos('Error'));
+  }, []);
+
+  const stats = {
+    totalAlumnos,
+    totalIncidencias: incidentsRepository.getAll().length,
+    casosAbiertos: incidentsRepository.getOpenCasesCount(),
+  };
+  const actividad = auditRepository.getRecent(6);
 
   return (
     <div className="space-y-8">
@@ -54,7 +69,7 @@ export function DashboardMvp() {
   );
 }
 
-function KpiCard({ label, value, tone }: { label: string; value: number; tone: 'blue' | 'amber' | 'red' }) {
+function KpiCard({ label, value, tone }: { label: string; value: number | string; tone: 'blue' | 'amber' | 'red' }) {
   const borderColor = {
     blue: 'border-l-blue-500',
     amber: 'border-l-amber-500',

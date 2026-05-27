@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { getAlumnoById, getAuditoria, getIncidencias, registrarIncidencia } from '../store/mockData';
+import { auditRepository } from '../repositories/auditRepository';
+import { incidentsRepository } from '../repositories/incidentsRepository';
+import { studentsRepository, type Alumno } from '../repositories/studentsRepository';
 
 const prioridadStyle: Record<string, string> = {
   baja: 'bg-slate-100 text-slate-700',
@@ -17,9 +19,27 @@ export function StudentRecord() {
   const navigate = useNavigate();
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const alumno = id ? getAlumnoById(id) : undefined;
-  const incidencias = id ? getIncidencias(id) : [];
-  const auditoria = id ? getAuditoria(id) : [];
+  const [alumno, setAlumno] = useState<Alumno | undefined>(undefined);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!id) return;
+    setLoading(true);
+    studentsRepository.getById(id)
+      .then((data) => {
+        setAlumno(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError('Error al cargar el expediente del alumno.');
+        setLoading(false);
+      });
+  }, [id, refreshKey]);
+
+  const incidencias = id ? incidentsRepository.getByStudent(id) : [];
+  const auditoria = id ? auditRepository.getByStudent(id) : [];
 
   const [showForm, setShowForm] = useState(false);
   const [tipo, setTipo] = useState(tiposIncidencia[0]);
@@ -28,10 +48,14 @@ export function StudentRecord() {
   const [observaciones, setObservaciones] = useState('');
   const [saved, setSaved] = useState(false);
 
-  if (!alumno) {
+  if (loading) {
+    return <div className="p-4 text-slate-500">Cargando expediente desde Supabase...</div>;
+  }
+
+  if (error || !alumno) {
     return (
       <div className="space-y-4">
-        <p className="text-lg font-semibold text-red-600">Alumno no encontrado</p>
+        <p className="text-lg font-semibold text-red-600">{error || 'Alumno no encontrado'}</p>
         <button
           type="button"
           onClick={() => navigate('/alumnos')}
@@ -54,7 +78,7 @@ export function StudentRecord() {
       console.log('alumno is undefined');
       return;
     }
-    const result = registrarIncidencia({
+    const result = incidentsRepository.create({
       alumnoId: alumno.id,
       tipo,
       prioridad,
