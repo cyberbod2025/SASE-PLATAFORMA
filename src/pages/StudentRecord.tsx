@@ -17,26 +17,43 @@ const tiposIncidencia = ['Retardo', 'Falta de material', 'Conducta', 'Uniforme',
 export function StudentRecord() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [refreshKey, setRefreshKey] = useState(0);
-
-  const [alumno, setAlumno] = useState<Alumno | undefined>(undefined);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [studentResult, setStudentResult] = useState<{
+    requestId?: string;
+    alumno?: Alumno;
+    error?: string;
+  }>({});
 
   useEffect(() => {
     if (!id) return;
-    setLoading(true);
+    let active = true;
+
     studentsRepository.getById(id)
       .then((data) => {
-        setAlumno(data);
-        setLoading(false);
+        if (active) {
+          setStudentResult({
+            requestId: id,
+            alumno: data,
+            error: data ? undefined : 'Alumno no encontrado',
+          });
+        }
       })
-      .catch((err) => {
-        console.error(err);
-        setError('Error al cargar el expediente del alumno.');
-        setLoading(false);
+      .catch(() => {
+        if (active) {
+          setStudentResult({
+            requestId: id,
+            error: 'Error al cargar el expediente del alumno.',
+          });
+        }
       });
-  }, [id, refreshKey]);
+
+    return () => {
+      active = false;
+    };
+  }, [id]);
+
+  const loading = Boolean(id) && studentResult.requestId !== id;
+  const alumno = studentResult.requestId === id ? studentResult.alumno : undefined;
+  const error = id ? studentResult.error : 'Identificador de alumno no disponible.';
 
   const incidencias = id ? incidentsRepository.getByStudent(id) : [];
   const auditoria = id ? auditRepository.getByStudent(id) : [];
@@ -69,34 +86,24 @@ export function StudentRecord() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    console.log('handleSubmit called', { descripcion, alumno, tipo, prioridad, refreshKey });
-    if (!descripcion.trim()) {
-      console.log('descripcion is empty');
-      return;
-    }
-    if (!alumno) {
-      console.log('alumno is undefined');
-      return;
-    }
-    const result = incidentsRepository.create({
+    if (!descripcion.trim() || !alumno) return;
+
+    incidentsRepository.create({
       alumnoId: alumno.id,
       tipo,
       prioridad,
       descripcion: descripcion.trim(),
       observaciones: observaciones.trim(),
     });
-    console.log('registrarIncidencia result', result);
-    setRefreshKey((k) => k + 1);
     setSaved(true);
     setShowForm(false);
     setDescripcion('');
     setObservaciones('');
     setTimeout(() => setSaved(false), 3000);
-    navigate(`/alumnos/${alumno.id}`, { replace: true });
   }
 
   return (
-    <div key={refreshKey} className="space-y-8">
+    <div className="space-y-8">
       <nav className="flex items-center gap-2 text-sm text-slate-500">
         <button type="button" onClick={() => navigate('/alumnos')} className="hover:text-slate-800 transition">Alumnos</button>
         <span>/</span>
@@ -123,19 +130,22 @@ export function StudentRecord() {
 
       {saved && (
         <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">
-          Incidencia registrada correctamente.
+          Borrador guardado solo en esta sesión. No se persistió ni notificó institucionalmente.
         </div>
       )}
 
       <div className="rounded-xl border border-slate-200 bg-white p-5">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-slate-800">Incidencias</h2>
+          <div>
+            <h2 className="text-lg font-semibold text-slate-800">Incidencias (demo local)</h2>
+            <p className="mt-1 text-xs text-slate-500">Sin persistencia en Supabase y sin notificación real.</p>
+          </div>
           <button
             type="button"
             onClick={() => setShowForm(!showForm)}
             className="rounded-lg bg-blue-800 px-4 py-2 text-xs font-semibold text-white shadow transition hover:bg-blue-900"
           >
-            {showForm ? 'Cancelar' : 'Registrar incidencia'}
+            {showForm ? 'Cancelar' : 'Preparar incidencia local'}
           </button>
         </div>
 
@@ -143,8 +153,9 @@ export function StudentRecord() {
           <form onSubmit={handleSubmit} className="mb-6 space-y-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-500">Tipo</label>
+                <label htmlFor="incident-type" className="mb-1 block text-xs font-semibold text-slate-500">Tipo</label>
                 <select
+                  id="incident-type"
                   value={tipo}
                   onChange={(e) => setTipo(e.target.value)}
                   className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500"
@@ -155,8 +166,9 @@ export function StudentRecord() {
                 </select>
               </div>
               <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-500">Prioridad</label>
+                <label htmlFor="incident-priority" className="mb-1 block text-xs font-semibold text-slate-500">Prioridad</label>
                 <select
+                  id="incident-priority"
                   value={prioridad}
                   onChange={(e) => setPrioridad(e.target.value as typeof prioridad)}
                   className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500"
@@ -169,8 +181,9 @@ export function StudentRecord() {
               </div>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold text-slate-500">Descripción</label>
+              <label htmlFor="incident-description" className="mb-1 block text-xs font-semibold text-slate-500">Descripción</label>
               <textarea
+                id="incident-description"
                 value={descripcion}
                 onChange={(e) => setDescripcion(e.target.value)}
                 rows={3}
@@ -179,8 +192,9 @@ export function StudentRecord() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold text-slate-500">Observaciones</label>
+              <label htmlFor="incident-observations" className="mb-1 block text-xs font-semibold text-slate-500">Observaciones</label>
               <textarea
+                id="incident-observations"
                 value={observaciones}
                 onChange={(e) => setObservaciones(e.target.value)}
                 rows={2}
@@ -189,9 +203,10 @@ export function StudentRecord() {
             </div>
             <button
               type="submit"
-              className="rounded-lg bg-blue-800 px-5 py-2.5 text-sm font-semibold text-white shadow transition hover:bg-blue-900"
+              disabled={!descripcion.trim()}
+              className="rounded-lg bg-blue-800 px-5 py-2.5 text-sm font-semibold text-white shadow transition hover:bg-blue-900 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Guardar incidencia
+              Guardar borrador local
             </button>
           </form>
         )}
@@ -224,9 +239,10 @@ export function StudentRecord() {
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-5">
-        <h2 className="mb-4 text-lg font-semibold text-slate-800">Auditoría</h2>
+        <h2 className="mb-1 text-lg font-semibold text-slate-800">Actividad simulada local</h2>
+        <p className="mb-4 text-xs text-slate-500">No constituye auditoría institucional persistente.</p>
         {auditoria.length === 0 ? (
-          <p className="text-sm text-slate-400">Sin eventos de auditoría.</p>
+          <p className="text-sm text-slate-400">Sin actividad simulada para este alumno.</p>
         ) : (
           <ul className="divide-y divide-slate-100">
             {[...auditoria].reverse().map((e) => (

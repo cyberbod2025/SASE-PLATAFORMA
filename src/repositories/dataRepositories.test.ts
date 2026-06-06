@@ -30,7 +30,7 @@ vi.mock('../lib/supabase', () => {
               return Promise.resolve({ data: student, error: student ? null : { code: 'PGRST116' } });
             })
           })),
-          then: function(resolve: any) {
+          then(resolve: (value: { data: typeof mockData; error: null }) => void) {
             resolve({ data: mockData, error: null });
           }
         })),
