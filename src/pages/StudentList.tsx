@@ -6,7 +6,7 @@ import { studentsRepository, type Alumno } from '../repositories/studentsReposit
 const estadoStyle: Record<string, string> = {
   activo: 'bg-green-100 text-green-800',
   baja: 'bg-red-100 text-red-800',
-  suspendido: 'bg-amber-100 text-amber-800',
+  egresado: 'bg-slate-100 text-slate-700',
 };
 
 export function StudentList() {
@@ -21,8 +21,7 @@ export function StudentList() {
         setAlumnos(data);
         setLoading(false);
       })
-      .catch((err) => {
-        console.error(err);
+      .catch(() => {
         setError('Error al cargar la lista de alumnos desde Supabase.');
         setLoading(false);
       });

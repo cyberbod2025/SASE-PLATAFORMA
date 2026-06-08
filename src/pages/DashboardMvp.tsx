@@ -7,16 +7,31 @@ import { studentsRepository } from '../repositories/studentsRepository';
 
 export function DashboardMvp() {
   const navigate = useNavigate();
-  const [totalAlumnos, setTotalAlumnos] = useState<number | string>('...');
+  const [totalAlumnos, setTotalAlumnos] = useState<number | null>(null);
+  const [studentsError, setStudentsError] = useState(false);
   
   useEffect(() => {
+    let active = true;
+
     studentsRepository.getAll()
-      .then(data => setTotalAlumnos(data.length))
-      .catch(() => setTotalAlumnos('Error'));
+      .then((data) => {
+        if (active) {
+          setTotalAlumnos(data.length);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setStudentsError(true);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const stats = {
-    totalAlumnos,
+    totalAlumnos: studentsError ? 'No disponible' : totalAlumnos ?? 'Cargando...',
     totalIncidencias: incidentsRepository.getAll().length,
     casosAbiertos: incidentsRepository.getOpenCasesCount(),
   };
@@ -26,17 +41,19 @@ export function DashboardMvp() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Panel de control</h1>
-        <p className="text-sm text-slate-500">Resumen institucional — datos ficticios</p>
+        <p className="text-sm text-slate-500">
+          Alumnos desde Supabase; incidencias y actividad en demo local no persistente.
+        </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <KpiCard label="Total alumnos" value={stats.totalAlumnos} tone="blue" />
-        <KpiCard label="Incidencias registradas" value={stats.totalIncidencias} tone="amber" />
-        <KpiCard label="Casos abiertos" value={stats.casosAbiertos} tone="red" />
+        <KpiCard label="Total alumnos (Supabase)" value={stats.totalAlumnos} tone="blue" />
+        <KpiCard label="Incidencias (demo local)" value={stats.totalIncidencias} tone="amber" />
+        <KpiCard label="Casos abiertos (demo local)" value={stats.casosAbiertos} tone="red" />
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-5">
-        <h2 className="mb-3 text-lg font-semibold text-slate-800">Actividad reciente</h2>
+        <h2 className="mb-3 text-lg font-semibold text-slate-800">Actividad reciente (demo local)</h2>
         {actividad.length === 0 ? (
           <p className="text-sm text-slate-400">Sin actividad registrada.</p>
         ) : (

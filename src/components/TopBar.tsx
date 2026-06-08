@@ -1,4 +1,4 @@
-import { Bell, LifeBuoy, Menu, School } from 'lucide-react';
+import { Bell, LifeBuoy, School } from 'lucide-react';
 
 import { type InstitutionalRole, roleLabels } from '../app/roles';
 import { RoleBadge } from './ui/RoleBadge';
@@ -13,13 +13,6 @@ export function TopBar({ activeRole }: TopBarProps) {
     <header className="sticky top-0 z-20 border-b border-white/70 bg-white/90 backdrop-blur">
       <div className="mx-auto flex min-h-20 max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex min-w-0 items-center gap-3">
-          <button
-            type="button"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-700 shadow-sm transition hover:border-cyan-200 hover:text-cyan-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500 lg:hidden"
-            aria-label="Abrir navegación"
-          >
-            <Menu aria-hidden="true" size={18} />
-          </button>
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-slate-950 text-cyan-100 shadow-luminous">
             <School aria-hidden="true" size={24} />
           </div>
@@ -37,15 +30,19 @@ export function TopBar({ activeRole }: TopBarProps) {
           </div>
           <button
             type="button"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-cyan-200 hover:text-cyan-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500"
+            disabled
+            className="inline-flex h-10 w-10 cursor-not-allowed items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 opacity-60 shadow-sm"
             aria-label="Notificaciones en preparación"
+            title="Notificaciones en preparación"
           >
             <Bell aria-hidden="true" size={18} />
           </button>
           <button
             type="button"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-700 shadow-sm transition hover:border-red-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500"
+            disabled
+            className="inline-flex h-10 w-10 cursor-not-allowed items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-400 opacity-60 shadow-sm"
             aria-label="SOS institucional en preparación"
+            title="SOS institucional en preparación"
           >
             <LifeBuoy aria-hidden="true" size={18} />
           </button>

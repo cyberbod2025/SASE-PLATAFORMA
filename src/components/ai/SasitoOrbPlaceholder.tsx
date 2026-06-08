@@ -5,9 +5,11 @@ export function SasitoOrbPlaceholder() {
     <div className="fixed bottom-4 right-4 z-30 sm:bottom-6 sm:right-6">
       <button
         type="button"
-        className="group relative flex h-12 w-12 items-center justify-center rounded-full border border-cyan-200 bg-slate-950 text-cyan-100 shadow-luminous transition hover:-translate-y-0.5 hover:border-cyan-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-500"
+        disabled
+        className="group relative flex h-12 w-12 cursor-not-allowed items-center justify-center rounded-full border border-cyan-200 bg-slate-950 text-cyan-100 opacity-70 shadow-luminous"
         aria-describedby="sasito-placeholder-help"
         aria-label="Sasito en preparación"
+        title="Sasito en preparación"
       >
         <Sparkles aria-hidden="true" size={20} />
         <span

@@ -5,9 +5,36 @@ export type Alumno = {
   nombre: string;
   grupo: string;
   matricula: string;
-  estado: 'activo' | 'baja' | 'suspendido';
+  estado: 'activo' | 'baja' | 'egresado';
   tutor?: string;
 };
+
+type StudentGroupRow = {
+  grado: number;
+  grupo: string;
+};
+
+type StudentRow = {
+  id: string;
+  matricula: string;
+  nombre_completo: string;
+  estatus: Alumno['estado'];
+  tutor_nombre: string | null;
+  grupos: StudentGroupRow | StudentGroupRow[] | null;
+};
+
+function mapStudent(row: StudentRow): Alumno {
+  const group = Array.isArray(row.grupos) ? row.grupos[0] : row.grupos;
+
+  return {
+    id: row.id,
+    nombre: row.nombre_completo,
+    matricula: row.matricula,
+    estado: row.estatus,
+    grupo: group ? `${group.grado}${group.grupo}` : 'Sin grupo',
+    tutor: row.tutor_nombre ?? undefined,
+  };
+}
 
 export const studentsRepository = {
   async getAll(): Promise<Alumno[]> {
@@ -16,18 +43,10 @@ export const studentsRepository = {
       .select('id, matricula, nombre_completo, estatus, tutor_nombre, grupos(grado, grupo)');
       
     if (error) {
-      console.error('Error fetching students:', error);
       throw new Error('Error al obtener los alumnos desde la base de datos.');
     }
     
-    return (data || []).map((row: any) => ({
-      id: row.id,
-      nombre: row.nombre_completo,
-      matricula: row.matricula,
-      estado: row.estatus,
-      grupo: row.grupos ? `${row.grupos.grado}${row.grupos.grupo}` : 'Sin grupo',
-      tutor: row.tutor_nombre,
-    }));
+    return ((data ?? []) as StudentRow[]).map(mapStudent);
   },
 
   async getById(id: string): Promise<Alumno | undefined> {
@@ -39,20 +58,11 @@ export const studentsRepository = {
       
     if (error) {
       if (error.code === 'PGRST116') return undefined;
-      console.error('Error fetching student by id:', error);
       throw new Error(`Error al obtener el alumno con ID ${id}.`);
     }
     
     if (!data) return undefined;
     
-    const row: any = data;
-    return {
-      id: row.id,
-      nombre: row.nombre_completo,
-      matricula: row.matricula,
-      estado: row.estatus,
-      grupo: row.grupos ? `${row.grupos.grado}${row.grupos.grupo}` : 'Sin grupo',
-      tutor: row.tutor_nombre,
-    };
+    return mapStudent(data as StudentRow);
   },
 };
